@@ -1,0 +1,22 @@
+Package: becophd
+Title: Processes Bec's PhD data
+Version: 0.0.1
+Authors@R: 
+    person(given = "Dean",
+           family = "Scarff",
+           role = c("aut", "cre"),
+           email = paste0("dos", "\x40", "scarff.id.au"))
+Description: Utilities for data processing and analysis.
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+Depends:
+    R (>= 4.1.0)
+Imports:
+    graphics,
+    purrr,
+    utils
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

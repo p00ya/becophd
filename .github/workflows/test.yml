@@ -1,0 +1,58 @@
+name: test
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly on Fridays at 06:08
+    - cron: '08 6 * * 5'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RSPM: 'https://packagemanager.rstudio.com/cran/__linux__/jammy/latest'
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      TZ: UTC
+    steps:
+    - uses: actions/checkout@v4
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: 'release'
+    - name: Query dependencies
+      run: |
+        install.packages("remotes")
+        saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds")
+        writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
+      shell: Rscript {0}
+    - name: Configure R package cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.R_LIBS_USER }}
+        key: R-jammy-${{ hashFiles('.github/R-version') }}-${{ hashFiles('.github/depends.Rds') }}
+        restore-keys: |
+          R-jammy-${{ hashFiles('.github/R-version') }}-
+    - name: Install system dependencies
+      run: |
+        while read -r cmd
+        do
+          eval sudo $cmd
+        done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install libcurl4-openssl-dev
+    - name: Install R dependencies
+      run: |
+        remotes::install_deps(dependencies = TRUE)
+        remotes::install_cran(c("devtools", "styler", "testthat"))
+      shell: Rscript {0}
+    - name: Lint
+      run: |
+        remotes::install_cran("styler")
+        quit(status = any(styler::style_dir()$changed))
+      shell: Rscript --vanilla {0}
+    - name: Build and test
+      run: |
+        devtools::check()
+      shell: Rscript --vanilla {0}

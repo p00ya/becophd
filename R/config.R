@@ -36,7 +36,7 @@ DefaultTestConfigs <- function() {
     digitspanvisual = c("bML", "fML"),
     listlearningtask = c("recallScore", "delayedRecallScore"),
     probabilisticsrt_ro = c("propCorrect_seqA", "meanCorrRT_seqA", "propCorrect_seqB", "meanCorrRT_seqB"),
-    prospectivememorytask_versiona = c("Hit", "Miss", "FA", "CR")
-    # TODO - add "sart" once we can deal with missing files.
+    prospectivememorytask_versiona = c("Hit", "Miss", "FA", "CR"),
+    sart = c("z_goRT", "z_CV")
   )
 }

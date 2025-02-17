@@ -12,8 +12,12 @@ ReadInquisit <- function(file) {
 #' @return a glob pattern to match the file name
 #' @keywords internal
 InquisitSummaryPattern <- function(id, testname, index) {
+  dir <- index[id, ]$dir
+  if (is.na(dir)) {
+    stop(paste("missing dir in index for participant: ", id))
+  }
   file.path(
-    index[id, ]$dir,
+    dir,
     "cogbat",
     paste0(testname, "_summary_*.iqdat")
   )
@@ -24,7 +28,7 @@ InquisitSummaryPattern <- function(id, testname, index) {
 MatchFile <- function(pattern) {
   f <- Sys.glob(pattern)
   if (length(f) != 1L) {
-    stop("Didn't match pattern: ", pattern, ", got: ", f)
+    stop("no file matching pattern: ", pattern)
   }
   f
 }
@@ -49,10 +53,35 @@ ReadInquisitSummary <- function(id, testname, index) {
 #' @return data frame with one row for each participant
 #' @export
 ReadAllInquisitSummaries <- function(testname, index) {
-  purrr::map(
+  results <- purrr::map(
     index$ID,
-    \(id) id |> ReadInquisitSummary(testname, index)
-  ) |>
+    # Emit a warning if file is missing, and return a NULL row.
+    \(id) tryCatch(
+      ReadInquisitSummary(id, testname, index),
+      error = \(cond) {
+        warning(
+          paste(
+            "Missing data for test:", testname,
+            "participant:", id,
+            "\n", cond
+          )
+        )
+        NULL
+      }
+    )
+  )
+  # Replace NULL results with a row of NAs; we need to infer the columns
+  # from the successful rows.
+  successes <- purrr::compact(results)
+  if (length(successes) == 0L) {
+    stop(paste("No data for test:", testname))
+  }
+  cols <- colnames(successes[[1]])
+  na_row <- rep(NA, length(cols)) |>
+    t() |>
+    as.data.frame() |>
+    stats::setNames(cols)
+  purrr::map(results, \(x) if (is.null(x)) na_row else x) |>
     purrr::list_rbind() |>
     cbind(index)
 }

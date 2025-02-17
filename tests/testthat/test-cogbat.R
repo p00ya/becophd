@@ -1,9 +1,10 @@
+config <- Config(
+  test_path("testdata"),
+  pptprefix = "PPT_",
+  tests = list(foo = c("metric"))
+)
+
 test_that("ReadAllConfiguredSummaries reads metric", {
-  config <- Config(
-    test_path("testdata"),
-    pptprefix = "PPT_",
-    tests = list(foo = c("metric"))
-  )
   index <- data.frame(
     ID = "1",
     dir = test_path("testdata", "PPT_1"),
@@ -16,11 +17,6 @@ test_that("ReadAllConfiguredSummaries reads metric", {
 })
 
 test_that("ReadAllConfiguredSummaries parses NAs", {
-  config <- Config(
-    test_path("testdata"),
-    pptprefix = "PPT_",
-    tests = list(foo = c("metric"))
-  )
   index <- ReadIndex(config)
   dfs <- ReadAllConfiguredSummaries(config, index)
   expect_named(dfs, "foo")
@@ -30,11 +26,6 @@ test_that("ReadAllConfiguredSummaries parses NAs", {
 })
 
 test_that("ReadAllConfiguredSummaries inserts NAs for missing files", {
-  config <- Config(
-    test_path("testdata"),
-    pptprefix = "PPT_",
-    tests = list(foo = c("metric"))
-  )
   index <- data.frame(
     ID = c("1", "4"),
     dir = c(test_path("testdata", "PPT_1"), test_path("testdata", "PPT_4")),
@@ -50,11 +41,6 @@ test_that("ReadAllConfiguredSummaries inserts NAs for missing files", {
 })
 
 test_that("ReadAllConfiguredSummaries errors when all files are missing", {
-  config <- Config(
-    test_path("testdata"),
-    pptprefix = "PPT_",
-    tests = list(foo = c("metric"))
-  )
   index <- data.frame(
     ID = "4",
     dir = test_path("testdata", "PPT_4"),

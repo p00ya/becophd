@@ -15,10 +15,21 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
+## Installation
+
+Install R 4.1.0 or later.  Then from R:
+
+```R
+install.packages("remotes")
+remotes::install_github("p00ya/becophd", auth_token = NULL)
+```
+
 ## Example Usage
 
-```
-devtools::load_all("becophd")
+From R:
+
+```R
+library(becophd)
 config <- Config("/path/to/data")
 index <- ReadIndex(config)
 dfs <- ReadAllConfiguredSummaries(config, index)

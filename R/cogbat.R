@@ -101,26 +101,87 @@ ReadAllConfiguredSummaries <- function(config, index) {
     purrr::map(\(testname) ReadAllInquisitSummaries(testname, index))
 }
 
-#' Writes box plots for each of the configured columns.
+#' Plots a single box chart.
+#' @param df a data frame
+#' @param name the name of the test as a character
+#' @param column the name of the metric as a character
+#' @return a printable chart
+PlotOneSummary <- function(df, name, column) {
+  ylab <- paste(name, column)
+  if (requireNamespace("ggplot2", quietly = TRUE)) {
+    ggplot2::ggplot(df, ggplot2::aes(x = .data$Group, y = .data[[column]])) +
+      ggplot2::geom_boxplot() +
+      ggplot2::ylab(ylab)
+  } else {
+    structure(
+      list(df = df, name = name, column = column),
+      class = "becophdSummaryPlot"
+    )
+  }
+}
+
+#' Draws a single box chart.
+#'
+#' @param x plot object as produced by [PlotOneSummary()]
+#' @param ... ignored
+#' @export
+print.becophdSummaryPlot <- function(x, ...) {
+  df <- x$df
+  ylab <- paste(x$name, x$column)
+  graphics::plot(df[[x$column]] ~ df$Group, ylab = ylab)
+}
+
+#' Compactly describes a plot.
+#'
+#' @param object plot object as produced by [PlotOneSummary()]
+#' @param ... ignored
+#' @export
+summary.becophdSummaryPlot <- function(object, ...) {
+  paste("Summary plot for:", object$name, object$column)
+}
+
+#' Display the data for a plot.
+#'
+#' @param object plot object as produced by [PlotOneSummary()]
+#' @param ... options passed to str
+#' @export
+str.becophdSummaryPlot <- function(object, ...) {
+  utils::str(unclass(object), ...)
+}
+
+#' Makes box plots for each of the configured columns.
+#'
+#' If available, ggplot2 will be used to produce the plots.
 #'
 #' @param config object (as created by [Config()])
 #' @param index data frame (as created by [ReadIndex()])
 #' @param dfs list of data frames (as created by
 #' [ReadAllConfiguredSummaries()])
+#' @return a list of printable charts
 #' @export
 PlotAllConfiguredSummaries <- function(config, index, dfs) {
-  for (name in names(config$tests)) {
-    df <- dfs[[name]]
-    if (is.null(df)) {
-      stop("Could not find data frame: ", name)
-    }
-    columns <- config$tests[[name]]
-    for (column in columns) {
-      if (is.null(df[[column]])) {
-        warning("Could not find column: '", column, "' in data frame ", name)
-      } else {
-        print(graphics::plot(df[[column]] ~ df$Group, ylab = paste(name, column)))
+  tests <- names(config$tests)
+  names(tests) <- tests
+  purrr::map(
+    tests,
+    \(name) {
+      df <- dfs[[name]]
+      if (is.null(df)) {
+        stop("Could not find data frame: ", name)
       }
+      columns <- config$tests[[name]]
+      plots <- purrr::map(
+        columns,
+        \(column) if (is.null(df[[column]])) {
+          warning("Could not find column: '", column, "' in data frame ", name)
+          # Empty list will be dropped by flatten.
+          list()
+        } else {
+          list(name = name, df = df, column = column)
+        }
+      )
     }
-  }
+  ) |>
+    purrr::list_flatten() |>
+    purrr::map(\(spec) PlotOneSummary(spec$df, spec$name, spec$column))
 }

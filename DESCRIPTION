@@ -1,6 +1,6 @@
 Package: becophd
 Title: Processes Bec's PhD data
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: 
     person(given = "Dean",
            family = "Scarff",
@@ -14,10 +14,12 @@ Depends:
 Imports:
     graphics,
     purrr,
+    rlang,
     stats,
     utils
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Suggests: 
+Suggests:
+    ggplot2,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

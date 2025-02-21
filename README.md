@@ -20,7 +20,7 @@ GNU General Public License for more details.
 Install R 4.1.0 or later.  Then from R:
 
 ```R
-install.packages("remotes")
+install.packages("ggplot2", "remotes")
 remotes::install_github("p00ya/becophd", auth_token = NULL)
 ```
 
@@ -33,5 +33,8 @@ library(becophd)
 config <- Config("/path/to/data")
 index <- ReadIndex(config)
 dfs <- ReadAllConfiguredSummaries(config, index)
-PlotAllConfiguredSummaries(config, index, dfs)
+ps <- PlotAllConfiguredSummaries(config, index, dfs)
+png()
+print(ps)
+dev.off()
 ```
